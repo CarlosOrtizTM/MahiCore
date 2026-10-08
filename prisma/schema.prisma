@@ -1,0 +1,170 @@
+// Prisma Schema — MahiCore
+// Docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ── Enums (valores cerrados, regla 4.2) ──────────────────
+enum Rol {
+  lector
+  editor
+  administrador
+}
+
+enum TipoEquipo {
+  switch
+  router
+  firewall
+  camara
+  access_point
+  servidor
+  otro
+}
+
+enum EstadoEquipo {
+  activo
+  mantenimiento
+  baja
+}
+
+enum MedioEnlace {
+  fibra
+  utp_cat6
+  coaxial
+}
+
+// ── Ubicaciones: Sede → Piso → Sala → Rack ───────────────
+model Sede {
+  id        String  @id @default(cuid())
+  nombre    String  @unique
+  direccion String?
+  pisos     Piso[]
+}
+
+model Piso {
+  id     String @id @default(cuid())
+  sedeId String
+  sede   Sede   @relation(fields: [sedeId], references: [id], onDelete: Cascade)
+  numero Int
+  salas  Sala[]
+}
+
+model Sala {
+  id      String   @id @default(cuid())
+  pisoId  String
+  piso    Piso     @relation(fields: [pisoId], references: [id], onDelete: Cascade)
+  nombre  String
+  racks   Rack[]
+  equipos Equipo[]
+}
+
+model Rack {
+  id        String   @id @default(cuid())
+  salaId    String
+  sala      Sala     @relation(fields: [salaId], references: [id], onDelete: Cascade)
+  nombre    String
+  unidadesU Int      @default(42)
+  equipos   Equipo[]
+}
+
+// ── Personas a cargo ─────────────────────────────────────
+model Responsable {
+  id       String   @id @default(cuid())
+  nombre   String
+  email    String   @unique
+  cargo    String?
+  telefono String?
+  equipos  Equipo[]
+  cuentas  Cuenta[]
+}
+
+// ── Equipos, puertos y enlaces (cables) ──────────────────
+model Equipo {
+  id            String       @id @default(cuid())
+  nombre        String
+  tipo          TipoEquipo
+  estado        EstadoEquipo @default(activo)
+  salaId        String
+  sala          Sala         @relation(fields: [salaId], references: [id], onDelete: Cascade)
+  rackId        String?
+  rack          Rack?        @relation(fields: [rackId], references: [id], onDelete: SetNull)
+  uInicio       Int? // unidad U más baja que ocupa (1 a 42)
+  alturaU       Int          @default(1)
+  responsableId String?
+  responsable   Responsable? @relation(fields: [responsableId], references: [id], onDelete: SetNull)
+  positionX     Float        @default(0)
+  positionY     Float        @default(0)
+  positionZ     Float        @default(0)
+  configuracion Json?
+  puertos       Puerto[]
+  creadoEn      DateTime     @default(now())
+  actualizadoEn DateTime     @updatedAt
+}
+
+model Puerto {
+  id          String   @id @default(cuid())
+  equipoId    String
+  equipo      Equipo   @relation(fields: [equipoId], references: [id], onDelete: Cascade)
+  numero      Int
+  tipo        String
+  vlan        Int?
+  enlacesComoA Enlace[] @relation("EnlaceA")
+  enlacesComoB Enlace[] @relation("EnlaceB")
+
+  @@unique([equipoId, numero])
+}
+
+model Enlace {
+  id        String      @id @default(cuid())
+  puertoAId String
+  puertoA   Puerto      @relation("EnlaceA", fields: [puertoAId], references: [id], onDelete: Cascade)
+  puertoBId String
+  puertoB   Puerto      @relation("EnlaceB", fields: [puertoBId], references: [id], onDelete: Cascade)
+  medio     MedioEnlace
+  activo    Boolean     @default(true)
+  fechaBaja DateTime?
+
+  @@index([puertoAId])
+  @@index([puertoBId])
+}
+
+// ── Bóveda de cuentas y auditoría ────────────────────────
+model Cuenta {
+  id                 String       @id @default(cuid())
+  responsableId      String?
+  responsable        Responsable? @relation(fields: [responsableId], references: [id], onDelete: SetNull)
+  servicio           String
+  usuario            String
+  passwordReferencia String // cifrada (AES) o UUID de Vaultwarden
+  passwordEsBoveda   Boolean      @default(false)
+  fechaVencimiento   DateTime?
+  logs               AccesoLog[]
+}
+
+model AccesoLog {
+  id       String   @id @default(cuid())
+  usuario  String
+  accion   String
+  cuentaId String?
+  cuenta   Cuenta?  @relation(fields: [cuentaId], references: [id], onDelete: SetNull)
+  detalle  Json?
+  fecha    DateTime @default(now())
+}
+
+// ── Autenticación (se usa desde la Fase 2) ───────────────
+model User {
+  id               String    @id @default(cuid())
+  username         String    @unique
+  passwordHash     String
+  role             Rol       @default(lector)
+  cambioPendiente  Boolean   @default(true)
+  intentosFallidos Int       @default(0)
+  bloqueadoHasta   DateTime?
+}
