@@ -1,13 +1,15 @@
 import Navbar from "@/components/navbar";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db";
 
 export default async function DashboardPage() {
-  // Consultas directas a PostgreSQL
-  const [total, activos, inactivos] = await Promise.all([
-    prisma.activo.count(),
-    prisma.activo.count({ where: { estado: "Activo" } }),
-    prisma.activo.count({ where: { estado: "Inactivo" } }),
-  ]);
+  const [totalEquipos, equiposActivos, equiposMantenimiento, equiposBaja] =
+    await Promise.all([
+      prisma.equipo.count(),
+      prisma.equipo.count({ where: { estado: "activo" } }),
+      prisma.equipo.count({ where: { estado: "mantenimiento" } }),
+      prisma.equipo.count({ where: { estado: "baja" } }),
+    ]);
+
   return (
     <main className="min-h-screen bg-mahiLight">
       <Navbar />
@@ -17,27 +19,26 @@ export default async function DashboardPage() {
           Dashboard
         </h1>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
           <div className="rounded-md bg-mahiWhite p-6 shadow-lg shadow-1x/30">
-            <p className="font-mono text-xs uppercase text-mahiDark">Total activos</p>
-            <p className="mt-2 font-mono text-3xl font-bold text-mahiBlue">{total}</p>
+            <p className="font-mono text-xs uppercase text-mahiDark">Total equipos</p>
+            <p className="mt-2 font-mono text-3xl font-bold text-mahiBlue">{totalEquipos}</p>
           </div>
 
           <div className="rounded-md bg-mahiWhite p-6 shadow-lg shadow-1x/30">
-            <p className="font-mono text-xs uppercase text-mahiDark">Activos activos</p>
-            <p className="mt-2 font-mono text-3xl font-bold text-mahiDark">{activos}</p>
+            <p className="font-mono text-xs uppercase text-mahiDark">Activos</p>
+            <p className="mt-2 font-mono text-3xl font-bold text-mahiDark">{equiposActivos}</p>
           </div>
 
           <div className="rounded-md bg-mahiWhite p-6 shadow-lg shadow-1x/30">
-            <p className="font-mono text-xs uppercase text-mahiDark">Alertas</p>
-            <p className="mt-2 font-mono text-3xl font-bold text-mahiRed">{inactivos}</p>
+            <p className="font-mono text-xs uppercase text-mahiDark">Mantenimiento</p>
+            <p className="mt-2 font-mono text-3xl font-bold text-yellow-500">{equiposMantenimiento}</p>
           </div>
-        </div>
 
-        <div className="mt-8 rounded-md shadow-lg shadow-1x/30 bg-mahiWhite p-6">
-          <p className="font-mono text-sm text-mahiDark">
-            TABLA DE ACTIVOS
-          </p>
+          <div className="rounded-md bg-mahiWhite p-6 shadow-lg shadow-1x/30">
+            <p className="font-mono text-xs uppercase text-mahiDark">Baja</p>
+            <p className="mt-2 font-mono text-3xl font-bold text-mahiRed">{equiposBaja}</p>
+          </div>
         </div>
       </div>
     </main>

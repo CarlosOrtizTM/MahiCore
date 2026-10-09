@@ -8,15 +8,18 @@ export default function Navbar() {
 
       </div>
 
-      <div className="flex gap-6 font-mono text-sm text-mahiDark">
+            <div className="flex gap-6 font-mono text-sm text-mahiDark">
         <a href="/" className="hover:text-mahiBlue">
           Dashboard
         </a>
-        <a href="/activos" className="hover:text-mahiBlue">
-          Activos
+        <a href="/equipos" className="hover:text-mahiBlue">
+          Equipos
         </a>
-        <a href="/reportes" className="hover:text-mahiBlue">
-          Reportes
+        <a href="/ubicaciones" className="hover:text-mahiBlue">
+          Ubicaciones
+        </a>
+        <a href="/responsables" className="hover:text-mahiBlue">
+          Responsables
         </a>
       </div>
 

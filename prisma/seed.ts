@@ -1,4 +1,16 @@
 import { PrismaClient, TipoEquipo } from "@prisma/client";
+import { hashPassword } from "../src/lib/password";
+
+// ── Guard: solo ejecutar contra base local ───────────────
+const dbUrl = process.env.DATABASE_URL ?? "";
+if (!dbUrl.includes("localhost")) {
+  console.error(
+    "SEED ABORTADO: DATABASE_URL no apunta a localhost.\n" +
+    "El seed solo debe ejecutarse contra la base de datos local (Docker).\n" +
+    `DATABASE_URL actual contiene: ${dbUrl.replace(/\/\/.*@/, "//***@")}`
+  );
+  process.exit(1);
+}
 
 const prisma = new PrismaClient();
 
@@ -20,10 +32,39 @@ function puertosPara(tipo: TipoEquipo) {
 async function main() {
   // Limpiar. Borrar la Sede elimina en cascada pisos, salas, racks,
   // equipos, puertos y enlaces (regla 4.2 del documento).
+  // Limpiar en orden para respetar foreign keys
   await prisma.accesoLog.deleteMany();
   await prisma.cuenta.deleteMany();
-  await prisma.responsable.deleteMany();
+  await prisma.enlace.deleteMany();
+  await prisma.puerto.deleteMany();
+  await prisma.equipo.deleteMany();
+  await prisma.rack.deleteMany();
+  await prisma.sala.deleteMany();
+  await prisma.piso.deleteMany();
   await prisma.sede.deleteMany();
+  await prisma.responsable.deleteMany();
+  await prisma.user.deleteMany();
+
+  // ── Usuarios de prueba (sección 11.1) ──────────────────
+  // Todos con cambioPendiente = true
+  const usuarios = [
+    { username: "admin",  password: "admin123",  role: "administrador" as const },
+    { username: "editor", password: "editor123", role: "editor" as const },
+    { username: "lector", password: "lector123", role: "lector" as const },
+  ];
+
+  for (const u of usuarios) {
+    await prisma.user.create({
+      data: {
+        username: u.username,
+        passwordHash: hashPassword(u.password),
+        role: u.role,
+        cambioPendiente: true,
+      },
+    });
+  }
+
+  console.log("Usuarios creados: admin, editor, lector (cambioPendiente=true)");
 
   // SOLO DATOS INVENTADOS. Nada real de la empresa.
   const responsable = await prisma.responsable.create({
@@ -92,7 +133,7 @@ async function main() {
     data: { puertoAId: pA.id, puertoBId: pB.id, medio: "utp_cat6" },
   });
 
-  console.log("Seed completado: 1 sede, 1 rack, 4 equipos, 1 enlace");
+  console.log("Seed completado: 3 usuarios, 1 sede, 1 rack, 4 equipos, 1 enlace");
 }
 
 main()
