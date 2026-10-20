@@ -1,4 +1,4 @@
-import { pbkdf2Sync, randomBytes } from "crypto";
+import { pbkdf2Sync, randomBytes, timingSafeEqual } from "crypto";
 
 const ITERATIONS = 600_000;
 const KEY_LENGTH = 64; // bytes
@@ -16,13 +16,15 @@ export function hashPassword(plain: string): string {
 }
 
 /**
- * Verifica una contraseña contra un hash almacenado.
+ * Verifica una contraseña contra un hash almacenado
+ * (comparación en tiempo constante).
  */
 export function verifyPassword(plain: string, stored: string): boolean {
   const [saltHex, hashHex] = stored.split(":");
   if (!saltHex || !hashHex) return false;
 
   const salt = Buffer.from(saltHex, "hex");
-  const hash = pbkdf2Sync(plain, salt, ITERATIONS, KEY_LENGTH, DIGEST);
-  return hash.toString("hex") === hashHex;
+  const expected = Buffer.from(hashHex, "hex");
+  const actual = pbkdf2Sync(plain, salt, ITERATIONS, KEY_LENGTH, DIGEST);
+  return expected.length === actual.length && timingSafeEqual(expected, actual);
 }

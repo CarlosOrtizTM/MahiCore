@@ -1,6 +1,10 @@
 import Navbar from "@/components/navbar";
+import { requirePageSession } from "@/lib/guard";
 
-export default function ReportesPage() {
+export const dynamic = "force-dynamic";
+
+export default async function ReportesPage() {
+  await requirePageSession();
   return (
     <main className="min-h-screen bg-mahiLight">
       <Navbar />
@@ -8,7 +12,7 @@ export default function ReportesPage() {
     <h1 className="mb-6 font-mono text-2xl font-bold uppercase text-mahiDark">
           Reportes
         </h1>
-        <div className="rounded-md shadow-lg shadow-1x/30 bg-mahiWhite p-6">
+        <div className="rounded-md shadow-lg shadow-mahiDark/30 bg-mahiWhite p-6">
         <p className="font-mono text-sm text-mahiDark">
             Reportes de activos
         </p>

@@ -1,7 +1,11 @@
 import Navbar from "@/components/navbar";
 import { prisma } from "@/lib/db";
+import { requirePageSession } from "@/lib/guard";
+
+export const dynamic = "force-dynamic";
 
 export default async function ResponsablesPage() {
+  await requirePageSession();
   const responsables = await prisma.responsable.findMany({
     include: { _count: { select: { equipos: true, cuentas: true } } },
   });
@@ -14,7 +18,7 @@ export default async function ResponsablesPage() {
           Responsables
         </h1>
 
-        <div className="overflow-x-auto rounded-md bg-mahiWhite p-6 shadow-lg shadow-1x/30">
+        <div className="overflow-x-auto rounded-md bg-mahiWhite p-6 shadow-lg shadow-mahiDark/30">
           <table className="w-full text-left">
             <thead className="border-b-2 border-mahiDark">
               <tr>

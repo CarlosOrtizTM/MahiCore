@@ -1,4 +1,7 @@
+"use client";
+
 import Image from "next/image";
+import { signOut } from "next-auth/react";
 
 export default function Navbar() {
   return (
@@ -23,7 +26,9 @@ export default function Navbar() {
         </a>
       </div>
 
-      <button className="rounded-md shadow-lg shadow-mahiDark/30 px-3 py-1 font-mono text-sm text-mahiDark hover:bg-mahiRed hover:text-mahiWhite hover:border-mahiRed">
+      <button
+        onClick={() => signOut({ callbackUrl: "/login" })}
+        className="rounded-md shadow-lg shadow-mahiDark/30 px-3 py-1 font-mono text-sm text-mahiDark hover:bg-mahiRed hover:text-mahiWhite hover:border-mahiRed">
         Salir
       </button>
     </nav>

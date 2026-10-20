@@ -1,7 +1,11 @@
 import Navbar from "@/components/navbar";
 import { prisma } from "@/lib/db";
+import { requirePageSession } from "@/lib/guard";
+
+export const dynamic = "force-dynamic";
 
 export default async function UbicacionesPage() {
+  await requirePageSession();
   const sedes = await prisma.sede.findMany({
     include: {
       pisos: {
@@ -23,7 +27,7 @@ export default async function UbicacionesPage() {
         </h1>
 
         {sedes.map((sede) => (
-          <div key={sede.id} className="mb-6 rounded-md bg-mahiWhite p-6 shadow-lg shadow-1x/30">
+          <div key={sede.id} className="mb-6 rounded-md bg-mahiWhite p-6 shadow-lg shadow-mahiDark/30">
             <h2 className="font-mono text-lg font-bold text-mahiDark">{sede.nombre}</h2>
             {sede.direccion && (
               <p className="font-mono text-xs text-mahiDark/60">{sede.direccion}</p>

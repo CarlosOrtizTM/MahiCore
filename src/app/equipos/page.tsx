@@ -1,7 +1,11 @@
 import Navbar from "@/components/navbar";
 import { prisma } from "@/lib/db";
+import { requirePageSession } from "@/lib/guard";
+
+export const dynamic = "force-dynamic";
 
 export default async function EquiposPage() {
+  await requirePageSession();
   const equipos = await prisma.equipo.findMany({
     include: { sala: true, rack: true, responsable: true },
     orderBy: { creadoEn: "desc" },
