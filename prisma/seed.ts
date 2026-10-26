@@ -30,6 +30,18 @@ function puertosPara(tipo: TipoEquipo) {
 }
 
 async function main() {
+  // Protección: este seed BORRA todo. Si ya hay datos, no se ejecuta salvo
+  // que se pida de forma explícita (SEED_FORCE=1), para no perder datos reales.
+  const existentes =
+    (await prisma.equipo.count()) + (await prisma.responsable.count()) + (await prisma.sede.count());
+  if (existentes > 0 && process.env.SEED_FORCE !== "1") {
+    console.error(
+      "SEED ABORTADO: la base ya contiene datos y este script los borraría.\n" +
+      "Si de verdad quieres reiniciar la base: SEED_FORCE=1 (cmd: set SEED_FORCE=1 && npx prisma db seed)."
+    );
+    process.exit(1);
+  }
+
   // Limpiar. Borrar la Sede elimina en cascada pisos, salas, racks,
   // equipos, puertos y enlaces (regla 4.2 del documento).
   // Limpiar en orden para respetar foreign keys

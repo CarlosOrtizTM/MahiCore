@@ -15,6 +15,9 @@ export function prismaError(e: unknown) {
     if (e.code === "P2002") {
       return NextResponse.json({ error: "Ya existe un registro con ese valor único" }, { status: 409 });
     }
+    if (e.code === "P2003") {
+      return NextResponse.json({ error: "El elemento relacionado no existe" }, { status: 400 });
+    }
     if (e.code === "P2025") {
       return NextResponse.json({ error: "Registro no encontrado" }, { status: 404 });
     }

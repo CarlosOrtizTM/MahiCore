@@ -24,6 +24,7 @@ enum TipoEquipo {
   camara
   access_point
   servidor
+  patch_panel
   otro
 }
 
@@ -101,6 +102,11 @@ model Equipo {
   positionX     Float        @default(0)
   positionY     Float        @default(0)
   positionZ     Float        @default(0)
+  direccionIp   String?
+  dns           String?
+  marca         String?
+  modelo        String?
+  descripcion   String?
   configuracion Json?
   puertos       Puerto[]
   creadoEn      DateTime     @default(now())
@@ -114,6 +120,7 @@ model Puerto {
   numero      Int
   tipo        String
   vlan        Int?
+  etiqueta    String? // texto escrito en el puerto (p. ej. oficina de destino)
   enlacesComoA Enlace[] @relation("EnlaceA")
   enlacesComoB Enlace[] @relation("EnlaceB")
 
@@ -127,6 +134,7 @@ model Enlace {
   puertoBId String
   puertoB   Puerto      @relation("EnlaceB", fields: [puertoBId], references: [id], onDelete: Cascade)
   medio     MedioEnlace
+  etiqueta  String? // identificador o color del cable
   activo    Boolean     @default(true)
   fechaBaja DateTime?
 
