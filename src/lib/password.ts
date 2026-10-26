@@ -1,4 +1,4 @@
-import { pbkdf2Sync, randomBytes, timingSafeEqual } from "crypto";
+import { pbkdf2Sync, randomBytes, randomInt, timingSafeEqual } from "crypto";
 
 const ITERATIONS = 600_000;
 const KEY_LENGTH = 64; // bytes
@@ -27,4 +27,12 @@ export function verifyPassword(plain: string, stored: string): boolean {
   const expected = Buffer.from(hashHex, "hex");
   const actual = pbkdf2Sync(plain, salt, ITERATIONS, KEY_LENGTH, DIGEST);
   return expected.length === actual.length && timingSafeEqual(expected, actual);
+}
+
+// Sin caracteres ambiguos (0/O, 1/l/I) para que sea fácil de dictar o copiar.
+const ALFABETO = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+
+/** Contraseña temporal aleatoria (criptográficamente segura). */
+export function generarPasswordTemporal(longitud = 14): string {
+  return Array.from({ length: longitud }, () => ALFABETO[randomInt(ALFABETO.length)]).join("");
 }

@@ -34,6 +34,11 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
+        if (!user.activo) {
+          verifyPassword(password, HASH_FALSO);
+          return null; // cuenta desactivada (misma respuesta que credenciales incorrectas)
+        }
+
         const ahora = new Date();
         if (user.bloqueadoHasta && user.bloqueadoHasta > ahora) {
           throw new Error("BLOQUEADO");

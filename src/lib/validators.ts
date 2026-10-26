@@ -36,6 +36,19 @@ const ipOpcional = z
   .transform((v) => v || null)
   .refine((v) => v === null || z.string().ip().safeParse(v).success, "Dirección IP inválida");
 
+export const usuarioCrearSchema = z.object({
+  username: z
+    .string()
+    .trim()
+    .regex(/^[a-zA-Z0-9._-]{3,40}$/, "Usuario de 3 a 40 caracteres: letras, números, punto, guion o guion bajo"),
+  role: z.enum(["lector", "editor", "administrador"]),
+});
+
+export const usuarioUpdateSchema = z.object({
+  role: z.enum(["lector", "editor", "administrador"]).optional(),
+  activo: z.boolean().optional(),
+});
+
 export const equipoSchema = z.object({
   nombre: z.string().trim().min(2, "Nombre demasiado corto").max(120),
   tipo: z.nativeEnum(TipoEquipo),

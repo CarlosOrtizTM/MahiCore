@@ -172,6 +172,7 @@ model User {
   passwordHash     String
   role             Rol       @default(lector)
   cambioPendiente  Boolean   @default(true)
+  activo           Boolean   @default(true)
   intentosFallidos Int       @default(0)
   bloqueadoHasta   DateTime?
 }
